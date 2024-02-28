@@ -15,6 +15,12 @@ This proof of concept demonstrates a simple distributed ticketing system using m
 - **Order Service**: Processes orders and publishes order messages to RabbitMQ.
 - **RabbitMQ**: Acts as the central communication hub between services.
 
+### Service Interaction
+
+1. **Auth Service** receives login requests. Upon successful authentication, it sends a message to RabbitMQ's `auth` queue.
+2. **Order Service** receives order placement requests. Upon receiving an order, it sends a message to RabbitMQ's `orders` queue.
+3. **RabbitMQ** queues the messages from both services, ensuring that any consumer subscribed to the queues can receive and process the messages.
+
 ## Prerequisites
 
 - Python 3.6 or later
