@@ -1,4 +1,4 @@
-# Distributed Ticketing System
+# CPSC559-TicketSystem
 
 This project demonstrates a distributed ticketing system using a microservices architecture and RabbitMQ for inter-service communication. It consists of several services: an Authentication Service, a Ticket Service, an Order Service, a RabbitMQ Consumer (also referred to as the Communication Service), and an Order Queue Service.
 
