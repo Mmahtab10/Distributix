@@ -1,111 +1,79 @@
-# CPSC 559-TicketSystem
-
-Below is a markdown (.md) template for a README file that explains the distributed ticketing system, its components, and detailed instructions on how to install and run the proof of concept. This README assumes that the system comprises an Auth Service, an Order Service, and a RabbitMQ instance for inter-service communication.
-
-```markdown
 # Distributed Ticketing System
 
-## Overview
+This project demonstrates a distributed ticketing system using a microservices architecture and RabbitMQ for inter-service communication. It consists of several services: an Authentication Service, a Ticket Service, an Order Service, a RabbitMQ Consumer (also referred to as the Communication Service), and an Order Queue Service.
 
-This proof of concept demonstrates a simple distributed ticketing system using microservices architecture. The system includes an Authentication Service (Auth Service) and an Order Service, with RabbitMQ serving as the message broker for inter-service communication.
+## System Overview
 
-## System Components
-
-- **Auth Service**: Authenticates users and publishes a login message to RabbitMQ.
-- **Order Service**: Processes orders and publishes order messages to RabbitMQ.
-- **RabbitMQ**: Acts as the central communication hub between services.
-
-### Service Interaction
-
-1. **Auth Service** receives login requests. Upon successful authentication, it sends a message to RabbitMQ's `auth` queue.
-2. **Order Service** receives order placement requests. Upon receiving an order, it sends a message to RabbitMQ's `orders` queue.
-3. **RabbitMQ** queues the messages from both services, ensuring that any consumer subscribed to the queues can receive and process the messages.
-
-## Prerequisites
-
-- Python 3.6 or later
-- Flask
-- Pika (RabbitMQ Python client)
-- RabbitMQ server
+- **Auth Service**: Handles user authentication requests.
+- **Ticket Service**: Manages event information, including ticket availability and pricing.
+- **Order Service**: Processes ticket orders by placing them into a queue.
+- **RabbitMQ Consumer (Communication Service)**: Acts as a middleware that listens for messages from RabbitMQ queues and forwards them appropriately.
+- **Order Queue Service**: Receives orders from the RabbitMQ Consumer and manages the order processing queue.
 
 ## Installation
 
-### 1. Install RabbitMQ
+### Prerequisites
 
-Follow the official RabbitMQ [installation guide](https://www.rabbitmq.com/download.html) for your operating system.
+- Python 3.6+
+- Flask
+- Pika
+- RabbitMQ server
+- Requests library
 
-### 2. Set Up Python Environment
+Ensure RabbitMQ is installed and running on your system. Installation instructions can be found at [RabbitMQ's official site](https://www.rabbitmq.com/download.html).
 
-It's recommended to use a virtual environment for Python projects.
+### Setup Python Environment
 
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+Install the necessary Python libraries using pip:
+
+```sh
+pip install flask pika requests
 ```
 
-### 3. Install Python Dependencies
+Running the Services
+Start each service in a separate terminal window or process. Here are the commands to start each service:
 
-Install Flask and Pika within your virtual environment.
-
-```bash
-pip install Flask pika
-```
-
-## Running the Proof of Concept
-
-### Start RabbitMQ
-
-Ensure RabbitMQ is running. Consult the RabbitMQ documentation for instructions specific to your OS.
-
-### Start the Auth Service
-
-Navigate to the directory containing `auth_service.py` and run:
-
-```bash
+Start Auth Service
+```sh
 python auth_service.py
 ```
 
-### Start the Order Service
+Start Ticket Service
+```sh
+python ticket_service.py
+```
 
-In a new terminal window, navigate to the directory containing `order_service.py` and run:
-
-```bash
+Start Order Service
+```sh
 python order_service.py
 ```
 
-### Start the RabbitMQ Consumer
+Start Order Queue Service
+```sh
+python order_queue_service.py
+```
 
-In a new terminal window, navigate to the directory containing `rabbitmq_consumer.py` and run:
-
-```bash
+Start RabbitMQ Consumer (Communication Service)
+```sh
 python rabbitmq_consumer.py
 ```
 
-The consumer script will listen for messages on the `auth` and `orders` queues and print them to the console.
+Interacting with the Services
+Use curl or any HTTP client to interact with the services. Below are some sample commands for common operations:
 
-## Testing the System
-
-### Test the Auth Service (Using Postman)
-
-Use `curl` to send a login request:
-
-```bash
+Auth Service (Login request)
+```sh
 curl -X POST http://localhost:5001/login -H "Content-Type: application/json" -d '{"username":"admin", "password":"password"}'
 ```
 
-### Test the Order Service
-
-Use `curl` to place an order:
-
-```bash
-curl -X POST http://localhost:5002/order -H "Content-Type: application/json" -d '{"order_id":"123"}'
+Ticket Service (List all events)
+```sh
+curl http://localhost:5003/events
 ```
 
-If everything is set up correctly, you should see messages from both services printed by the RabbitMQ consumer in the terminal.
-
-## Conclusion
-
-This proof of concept demonstrates basic inter-service communication in a distributed system using RabbitMQ. It's a foundational step towards building more complex, scalable, and resilient distributed applications.
+Order Service (Place an order)
+```sh
+curl -X POST http://localhost:5002/order -H "Content-Type: application/json" -d '{"order_id": "12345", "event_id": "event1", "quantity": 2}'
 ```
 
-This README provides a comprehensive guide for users to understand, install, and run the distributed ticketing system proof of concept. Adjust paths, filenames, or specific commands as necessary based on your project structure or any additional setup steps your implementation may require.
+For detailed information about each service, refer to the individual service files and comments within the code.
