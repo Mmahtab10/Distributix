@@ -1,21 +1,23 @@
-from flask import Flask, request, jsonify
-import pika  # Import pika for RabbitMQ interaction
+from flask import Flask, request, jsonify  # Import Flask modules for the web service and handling requests/responses
+import pika, json  # Import Pika for RabbitMQ and json for JSON processing
 
-app = Flask(__name__)
+app = Flask(__name__)  # Initialize the Flask app
 
+# Define a route for placing orders with POST method
 @app.route('/order', methods=['POST'])
 def order():
-    # Extract order_id from the request
-    order_id = request.json.get('order_id')
-    # Connect to RabbitMQ server
+    # Serialize the request JSON to a string to be sent as the message body
+    order_details = json.dumps(request.json)
+    # Establish a connection to the local RabbitMQ server
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-    channel = connection.channel()
-    # Declare a queue named 'orders'. RabbitMQ will create it if it doesn't exist.
-    channel.queue_declare(queue='orders')
-    # Publish a message to the 'orders' queue indicating an order has been placed
-    channel.basic_publish(exchange='', routing_key='orders', body=f'Order {order_id} placed')
-    connection.close()  # Close the connection to RabbitMQ
-    return jsonify({"message": f"Order {order_id} received"}), 200
+    channel = connection.channel()  # Open a channel
+    channel.queue_declare(queue='orders')  # Declare a queue named 'orders'
+    # Publish the order details to the 'orders' queue
+    channel.basic_publish(exchange='', routing_key='orders', body=order_details)
+    connection.close()  # Close the RabbitMQ connection
+    # Respond to the client that the order was received and sent to RabbitMQ
+    return jsonify({"message": "Order received and sent to RabbitMQ"}), 200
 
+# Run the Flask application on port 5002
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)  # Run the Flask app on port 5002
+    app.run(debug=True, port=5002)
