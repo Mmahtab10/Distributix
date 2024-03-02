@@ -1,25 +1,37 @@
 import pika  # Import pika for interacting with RabbitMQ
+import requests  # Import requests to make HTTP requests (for forwarding orders)
 
-def main():
-    # Establish connection to RabbitMQ server
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
+# Define the callback function for processing messages received from RabbitMQ
+def callback(ch, method, properties, body):
+    # Decode the message body
+    message_body = body.decode()
+    
+    # Check the routing key to determine the type of message
+    if method.routing_key == 'auth':
+        # If the message is from the 'auth' queue, it's related to authentication
+        print(f"Authentication successful: {message_body}")
+    elif method.routing_key == 'orders':
+        # If the message is from the 'orders' queue, it's an order that needs processing
+        print(f"Order received: {message_body}")
+        # Before forwarding, show a message indicating the action
+        print("Forwarding order to Order Queue Service...")
+        # Forward the order to the Order Queue Service
+        response = requests.post('http://localhost:5004/enqueue', data=body, headers={'Content-Type': 'application/json'})
+        print(f"Order forwarded to Order Queue Service: {response.text}")
 
-    # Declare the queues we expect to listen to
-    channel.queue_declare(queue='auth')
-    channel.queue_declare(queue='orders')
+# Establish connection to RabbitMQ server
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+channel = connection.channel()  # Open a channel
 
-    # Define a callback function that will be called when a message is received
-    def callback(ch, method, properties, body):
-        print(f"Received {body.decode()} from queue {method.routing_key}")
+# Declare queues we are expecting to consume messages from
+channel.queue_declare(queue='auth')  # Queue for authentication messages
+channel.queue_declare(queue='orders')  # Queue for order messages
 
-    # Start consuming messages from both 'auth' and 'orders' queues using the callback function
-    channel.basic_consume(queue='auth', on_message_callback=callback, auto_ack=True)
-    channel.basic_consume(queue='orders', on_message_callback=callback, auto_ack=True)
+# Start consuming messages from both 'auth' and 'orders' queues using the callback function
+channel.basic_consume(queue='auth', on_message_callback=callback, auto_ack=True)
+channel.basic_consume(queue='orders', on_message_callback=callback, auto_ack=True)
 
-    print('Waiting for messages. To exit press CTRL+C')
-    # Enter a never-ending loop that waits for data and runs callbacks whenever necessary
-    channel.start_consuming()
-
-if __name__ == '__main__':
-    main()  # Execute the main function
+# Print a message to indicate that the consumer is running and ready to receive messages
+print('RabbitMQ Consumer is running. To exit press CTRL+C')
+# Enter a never-ending loop that waits for messages and runs the callback when necessary
+channel.start_consuming()
