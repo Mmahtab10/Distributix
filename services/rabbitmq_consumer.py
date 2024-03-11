@@ -14,27 +14,37 @@ ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 # Configuration for your services
 services = {
-    'auth_service': {'host': 'auth_service_host', 'health_check_url': 'http://127.0.0.1:5001/authHealth', 'path': '/Users/ehabi/Documents/GitHub/CPSC559-TicketSystem/temp/auth_service_updated.py'},
-    'ticket_service': {'host': 'ticket_service_host', 'health_check_url': 'http://127.0.0.1:5003/ticketHealth', 'path': '/Users/ehabi/Documents/GitHub/CPSC559-TicketSystem/temp/ticket_service_updated.py'},
-    # Add other services as needed
+    'auth_service': {'host': 'auth_service_host', 'health_check_url': 'http://127.0.0.1:5001/authHealth', 'restart': 'http://127.0.0.1:5007/start-app', 'port': 5001},
+    'ticket_service': {'host': 'ticket_service_host', 'health_check_url': 'http://127.0.0.1:5003/ticketHealth', 'restart': 'http://127.0.0.1:5007/start-app', 'port': 5003},
+    'order_service': {'host': 'order_service_host', 'health_check_url': 'http://127.0.0.1:5002/orderHealth', 'restart': 'http://127.0.0.1:5007/start-app', 'port': 5002},
+    'order_queue_service': {'host': 'order_queue_service_host', 'health_check_url': 'http://127.0.0.1:5004/orderQueueHealth', 'restart': 'http://127.0.0.1:5007/start-app', 'port': 5004},
 }
 
 # Function to restart a service on its host
-def restart_service(host, path):
-    ssh_client.connect(hostname='localhost', username='ehabi')
-    ssh_client.exec_command('python '+ path)
-    ssh_client.close()
+def restart_service(host, name, port, restart):
+    json_data = {
+        "name": name,
+        "port": port
+    }
+    response = requests.post(restart, json=json_data)
+    print(response.text)
 
 # Function to perform a health check for a service
 def perform_health_check(service_name, service_info):
-    response = requests.get(service_info['health_check_url'])
-    if response.status_code != 200:
-        restart_service(service_info['host'], service_info['path'])
+    try:
+        response = requests.get(service_info['health_check_url'], timeout=5)
+        print(response.text)
+        # if response.status_code != 200: 
+        #     restart_service(service_info['host'], service_info['path'])
+    except requests.RequestException as e:
+        print(f"An error occurred while performing the health check on {service_name}")
+        # Optionally, you can handle the error further, such as retrying the request or logging it.
+        restart_service(service_info['host'], service_name, service_info['port'], service_info['restart'])
 
 # Set up the scheduler
 scheduler = BackgroundScheduler()
 for service_name, service_info in services.items():
-    scheduler.add_job(perform_health_check, 'interval', minutes=1, args=[service_name, service_info])
+    scheduler.add_job(perform_health_check, 'interval', seconds=10, args=[service_name, service_info])
 scheduler.start()
 
 
