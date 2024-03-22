@@ -1,3 +1,7 @@
 env*
 __pycache__*
 nohup.out
+.idea/CPSC559-TicketSystem.iml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/modules.xml
+.idea/vcs.xml
