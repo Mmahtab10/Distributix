@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Providers } from './providers';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import ReduxProvider from '@/components/ReduxProvider';
+import { PersistGate } from 'redux-persist/integration/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,8 +19,12 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>
-				<Providers>{children}</Providers>
+			<body
+				className={`${inter.className} w-screen h-screen overflow-hidden bg-black`}
+			>
+				<ReduxProvider>
+					<Providers>{children}</Providers>
+				</ReduxProvider>
 			</body>
 		</html>
 	);
