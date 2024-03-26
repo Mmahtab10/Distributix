@@ -1,7 +1,16 @@
 'use client';
 
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { persistReducer, persistStore } from 'redux-persist';
+import {
+	FLUSH,
+	PAUSE,
+	PERSIST,
+	PURGE,
+	REGISTER,
+	REHYDRATE,
+	persistReducer,
+	persistStore,
+} from 'redux-persist';
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import sessionReducer, { SessionState } from './session.slice';
 import createFilter from 'redux-persist-transform-filter';
@@ -42,6 +51,9 @@ const store = configureStore({
 		getDefaultMiddleware({
 			thunk: {
 				extraArgument: {},
+			},
+			serializableCheck: {
+				ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
 			},
 		}),
 	devTools: true,
