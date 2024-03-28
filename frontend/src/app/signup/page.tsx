@@ -91,7 +91,7 @@ export default function Page() {
 							</div>
 							<div className="flex flex-col justify-between items-center gap-4">
 								<Button
-									label="Login"
+									label="Signup"
 									onClick={() => formik.submitForm()}
 									loading={loading}
 									disabled={!!formik.errors.email || !!formik.errors.password}
