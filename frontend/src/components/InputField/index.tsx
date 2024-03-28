@@ -19,16 +19,16 @@ const InputField: React.FC<Props> = ({
 	error,
 }) => {
 	const getSharedStyles = () =>
-		`border-2 bg-slate-900 w-full ${
-			error ? 'border-red' : 'border-slate-800 focus:border-slate-700'
-		} flex justify-start items-center rounded-md px-2 outline-none text-white transition-all duration-200 ease-in-out `;
+		`border-[3px] bg-white w-full ${
+			error ? 'border-red' : 'border-black focus:border-blue'
+		} flex justify-start items-center rounded-sm px-2 outline-none text-black font-bold transition-all duration-200 ease-in-out `;
 	return (
 		<div
 			className={`w-full ${
-				type === 'textarea' ? 'min-h-[5rem] max-h-[8rem]' : 'h-20'
-			} flex flex-col justify-start items-start relative gap-1 `}
+				type === 'textarea' ? 'min-h-[5rem] max-h-[8rem]' : 'max-h-[5rem]'
+			} flex flex-col justify-start items-start relative`}
 		>
-			<label className={`text-white`} htmlFor={name}>
+			<label className={`text-black font-bold`} htmlFor={name}>
 				{label}
 			</label>
 			{type === 'textarea' ? (
@@ -51,7 +51,7 @@ const InputField: React.FC<Props> = ({
 					value={value || ''}
 				/>
 			)}
-			<p className="top-full left-2 absolute font-bold text-red text-xs">
+			<p className="top-full left-2 absolute font-bold text-red text-sm">
 				{error}
 			</p>
 		</div>

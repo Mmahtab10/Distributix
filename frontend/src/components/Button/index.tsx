@@ -23,19 +23,19 @@ const Button: React.FC<Props> = ({
 }) => {
 	return (
 		<button
-			className={`cursor-pointer transition-all ease-in-out duration-200 rounded-md font-bold text-center disabled:bg-grey disabled:border-grey ${
+			className={`cursor-pointer transition-all ease-in-out duration-200 rounded-sm font-bold text-center disabled:bg-grey disabled:border-grey ${
 				loading ? 'disabled:cursor-wait' : 'disabled:cursor-not-allowed'
 			} flex justify-center items-center gap-2
       ${
 				size === 'md'
-					? 'w-32 h-10 border-2'
+					? 'w-32 h-10 border-[3px]'
 					: size === 'lg'
 					? 'w-48 h-18 border-4 text-lg'
 					: 'w-24 h-8 border-2 text-sm'
 			}
       ${
 				style === 'primary' &&
-				'bg-slate-800 text-white border-slate-900 hover:bg-slate-950'
+				'bg-blue text-white border-blue hover:bg-white hover:text-blue'
 			} 
       ${
 				style === 'secondary' &&

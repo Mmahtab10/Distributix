@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import { Montserrat } from 'next/font/google';
+import { IBM_Plex_Sans } from 'next/font/google';
 import './globals.css';
 import ReduxProvider from '@/components/ReduxProvider';
 import { Providers } from './providers';
 
-const montserrat = Montserrat({ subsets: ['latin'] });
+const ibmPlexSans = IBM_Plex_Sans({
+	weight: ['100', '200', '300', '400', '500', '600', '700'],
+	subsets: ['latin'],
+});
 
 export const metadata: Metadata = {
 	title: 'DistribuTix',
@@ -18,14 +21,8 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${montserrat.className} relative w-screen h-screen overflow-hidden  bg-black`}
+				className={`${ibmPlexSans.className} relative w-screen h-screen overflow-hidden bg-black`}
 			>
-				{/* eslint-disable-next-line @next/next/no-img-element */}
-				<img
-					src="./confetti-doodles.svg"
-					alt="doodles"
-					className="top=0 left-0 -z-10 absolute w-full h-full object-cover"
-				/>
 				<ReduxProvider>
 					<Providers>{children}</Providers>
 				</ReduxProvider>

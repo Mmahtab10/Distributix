@@ -2,6 +2,7 @@
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
+import Logo from '@/components/Logo';
 import isValidToken from '@/helpers/isValidToken';
 import loginThunk from '@/store/login.thunk';
 import { SessionState } from '@/store/session.slice';
@@ -28,9 +29,9 @@ export default function Page() {
 
 	return (
 		<div className="flex justify-center items-center w-full h-full">
-			<div className="flex flex-col justify-start items-center gap-8 bg-slate-900 p-8 rounded-lg min-w-96 min-h-96">
-				<div className="flex flex-col justify-start items-start gap-2">
-					<h1 className="font-bold text-4xl text-white">DistribuTix</h1>
+			<div className="flex flex-col justify-start items-center gap-4 bg-white p-8 rounded-lg min-w-96 min-h-96">
+				<div className="self-start">
+					<Logo size="md" />
 				</div>
 				<Formik
 					initialValues={{
@@ -48,8 +49,8 @@ export default function Page() {
 					}}
 				>
 					{(formik) => (
-						<div className="flex flex-col justify-between items-center gap-10">
-							<div className="z-10 flex flex-col justify-between items-center gap-4">
+						<div className="flex flex-col justify-between items-center gap-8 w-full">
+							<div className="z-10 flex flex-col justify-between items-center gap-4 w-full">
 								{error && <p className="font-bold text-red">{error}</p>}
 								<InputField
 									name="email"
@@ -97,7 +98,7 @@ export default function Page() {
 								/>
 								<Link
 									href="/signup"
-									className="text-neutral-400 text-sm hover:text-white underline underline-offset-4 cursor-pointer"
+									className="font-bold text-neutral-400 text-sm hover:text-blue underline underline-offset-4 cursor-pointer"
 								>
 									signup?
 								</Link>
