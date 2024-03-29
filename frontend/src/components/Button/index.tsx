@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 import { CgSpinner } from 'react-icons/cg';
 
 interface Props {
-	label: string;
+	label?: string;
 	onClick?: () => void;
 	type?: 'submit' | 'button';
 	style?: 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -28,10 +28,10 @@ const Button: React.FC<Props> = ({
 			} flex justify-center items-center gap-2
       ${
 				size === 'md'
-					? 'w-32 h-10 border-[3px]'
+					? 'w-32 min-h-10 border-[3px]'
 					: size === 'lg'
-					? 'w-48 h-18 border-4 text-lg'
-					: 'w-24 h-8 border-2 text-sm'
+					? 'w-48 min-h-18 border-4 text-lg'
+					: 'w-24 min-h-8 border-2 text-sm'
 			}
       ${
 				style === 'primary' &&
@@ -43,7 +43,7 @@ const Button: React.FC<Props> = ({
 			} 
       ${
 				style === 'ghost' &&
-				'bg-inherit text-white border-white hover:bg-white hover:text-black'
+				'bg-white text-black border-black hover:border-blue hover:text-blue'
 			} 
       ${
 				style === 'danger' && 'bg-red text-white border-red hover:bg-red-dark'

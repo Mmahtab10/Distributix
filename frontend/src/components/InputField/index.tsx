@@ -2,7 +2,7 @@ import React from 'react';
 
 interface Props {
 	name: string;
-	label: string;
+	label?: string;
 	placeholder: string;
 	onChange: (value: any) => void;
 	value: any;
@@ -28,9 +28,11 @@ const InputField: React.FC<Props> = ({
 				type === 'textarea' ? 'min-h-[5rem] max-h-[8rem]' : 'max-h-[5rem]'
 			} flex flex-col justify-start items-start relative`}
 		>
-			<label className={`text-black font-bold`} htmlFor={name}>
-				{label}
-			</label>
+			{label && (
+				<label className={`text-black font-bold`} htmlFor={name}>
+					{label}
+				</label>
+			)}
 			{type === 'textarea' ? (
 				<textarea
 					id={name}

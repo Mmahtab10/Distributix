@@ -29,9 +29,9 @@ export default function Page() {
 
 	return (
 		<div className="flex justify-center items-center w-full h-full">
-			<div className="flex flex-col justify-start items-center gap-4 bg-white p-8 rounded-sm min-w-96 min-h-96">
+			<div className="flex flex-col justify-start items-center gap-6 bg-white p-8 rounded-sm min-w-96 min-h-96">
 				<div className="self-start">
-					<Logo size="md" />
+					<Logo size="lg" />
 				</div>
 				<Formik
 					initialValues={{
