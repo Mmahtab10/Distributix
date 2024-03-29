@@ -11,7 +11,7 @@ export default function Page() {
 	return (
 		<div className="flex flex-col justify-start items-start gap-8 p-8 lg:p-16 w-full h-full">
 			<div className="flex justify-between items-center gap-16 bg-white p-4 rounded-sm w-full">
-				<Logo size="lg" type="light" hideBorder={false} />
+				<Logo size="lg" type="light" hideBorder={true} />
 				<div className="flex justify-between gap-4 bg-white rounded-sm w-96">
 					<InputField
 						placeholder="search"
