@@ -30,8 +30,8 @@ const Button: React.FC<Props> = ({
 				size === 'md'
 					? 'w-32 min-h-10 border-[3px]'
 					: size === 'lg'
-					? 'w-48 min-h-18 border-4 text-lg'
-					: 'w-24 min-h-8 border-2 text-sm'
+					? 'w-48 min-h-18 border-[3px] text-lg'
+					: 'w-24 min-h-8 border-[3px] text-sm'
 			}
       ${
 				style === 'primary' &&
