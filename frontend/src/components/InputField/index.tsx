@@ -6,7 +6,7 @@ interface Props {
 	placeholder: string;
 	onChange: (value: any) => void;
 	value: any;
-	type?: 'text' | 'email' | 'password' | 'textarea';
+	type?: "textarea" | "text" | "email" | "password" | "number" | "datetime-local";
 	error?: string;
 }
 const InputField: React.FC<Props> = ({
