@@ -9,13 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@chakra-ui/next-js": "^2.2.0",
-    "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@reduxjs/toolkit": "^2.2.2",
+    "@vis.gl/react-google-maps": "^0.8.2",
     "formik": "^2.4.5",
-    "framer-motion": "^11.0.20",
     "jwt-decode": "^4.0.0",
     "lodash": "^4.17.21",
     "next": "14.1.4",
