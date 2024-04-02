@@ -49,12 +49,11 @@ const CreateTicketPage = () => {
 	};
 
 	return (
-		<div className="flex justify-center items-center w-full h-full">
-			<div className="flex flex-col justify-start items-center gap-6 bg-white p-8 rounded-sm min-w-96 min-h-96">
-				<div className="flex flex-col gap-2 self-start">
-					<Logo size="lg" />
-					<p className="font-medium text-neutral-600">Create Ticket</p>
-				</div>
+		<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+			<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
+				<Logo size="lg" type="light" hideBorder={true} />
+			</div>
+			<div className="flex flex-col justify-start items-center gap-6 bg-white md:p-8 rounded">
 				<Formik
 					initialValues={initialValues}
 					validationSchema={validationSchema}
@@ -62,7 +61,7 @@ const CreateTicketPage = () => {
 				>
 					{(formik) => (
 						<div className="flex flex-col justify-between items-center gap-8 w-full">
-							<div className="z-10 justify-center items-center gap-x-8 gap-y-4 grid grid-cols-2 grid-flow-row w-full">
+							<div className="z-10 justify-center items-center gap-x-8 gap-y-4 grid grid-cols-1 md:grid-cols-2 grid-flow-row w-full">
 								<InputField
 									name="name"
 									label="Event Name"
@@ -199,12 +198,18 @@ const CreateTicketPage = () => {
 									}
 								/>
 
-								<div className="flex flex-col justify-between items-end gap-4 self-end">
+								<div className="flex justify-between items-end gap-4 self-end">
 									<Button
 										type="submit"
 										label="Create Ticket"
 										loading={formik.isSubmitting}
 										disabled={formik.isSubmitting || !formik.isValid}
+									/>
+									<Button
+										style="danger"
+										label="Cancel"
+										disabled={formik.isSubmitting || !formik.isValid}
+										onClick={() => router.push('/')}
 									/>
 								</div>
 							</div>

@@ -21,7 +21,7 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body
-				className={`${ibmPlexSans.className} relative w-screen h-screen overflow-hidden bg-black`}
+				className={`${ibmPlexSans.className} relative w-screen h-screen overflow-hidden bg-white`}
 			>
 				<ReduxProvider>
 					<Providers>{children}</Providers>

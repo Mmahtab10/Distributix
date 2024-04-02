@@ -29,83 +29,90 @@ export default function Page() {
 
 	return (
 		<div className="flex justify-center items-center w-full h-full">
-			<div className="flex flex-col justify-start items-center gap-6 bg-white p-8 rounded-sm min-w-96 min-h-96">
-				<div className="self-start">
-					<Logo size="lg" />
+			<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+				<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
+					<Link href="/" className="">
+						<Logo size="lg" type="light" hideBorder={true} />
+					</Link>
 				</div>
-				<Formik
-					initialValues={{
-						email: '',
-						password: '',
-					}}
-					validationSchema={Yup.object().shape({
-						email: Yup.string().email('invalid email').required('required'),
-						password: Yup.string()
-							.min(6, 'password is too short')
-							.required('required'),
-					})}
-					onSubmit={(values) => {
-						dispatch(signupThunk(values.email, values.password) as any);
-					}}
-				>
-					{(formik) => (
-						<div className="flex flex-col justify-between items-center gap-8 w-full">
-							<div className="z-10 flex flex-col justify-between items-center gap-4 w-full">
-								{error && <p className="font-bold text-red">{error}</p>}
-								<InputField
-									name="email"
-									label="Email"
-									type="email"
-									onChange={(e) => {
-										if (!formik.touched.email) {
-											formik.setTouched({ ...formik.touched, email: true });
+				<div className="flex flex-col justify-start items-center gap-6 bg-white md:p-8 rounded">
+					<Formik
+						initialValues={{
+							email: '',
+							password: '',
+						}}
+						validationSchema={Yup.object().shape({
+							email: Yup.string().email('invalid email').required('required'),
+							password: Yup.string()
+								.min(6, 'password is too short')
+								.required('required'),
+						})}
+						onSubmit={(values) => {
+							dispatch(signupThunk(values.email, values.password) as any);
+						}}
+					>
+						{(formik) => (
+							<div className="flex flex-col justify-between items-center gap-8 w-full">
+								<div className="z-10 flex flex-col justify-between items-center gap-4 w-full">
+									{error && <p className="font-bold text-red">{error}</p>}
+									<InputField
+										name="email"
+										label="Email"
+										type="email"
+										onChange={(e) => {
+											if (!formik.touched.email) {
+												formik.setTouched({ ...formik.touched, email: true });
+											}
+											formik.handleChange(e);
+										}}
+										value={formik.values.email}
+										placeholder="email@example.com"
+										error={
+											!!formik.errors.email && formik.touched.email
+												? formik.errors.email
+												: ''
 										}
-										formik.handleChange(e);
-									}}
-									value={formik.values.email}
-									placeholder="email@example.com"
-									error={
-										!!formik.errors.email && formik.touched.email
-											? formik.errors.email
-											: ''
-									}
-								/>
-								<InputField
-									name="password"
-									label="Password"
-									type="password"
-									onChange={(e) => {
-										if (!formik.touched.password) {
-											formik.setTouched({ ...formik.touched, password: true });
+									/>
+									<InputField
+										name="password"
+										label="Password"
+										type="password"
+										onChange={(e) => {
+											if (!formik.touched.password) {
+												formik.setTouched({
+													...formik.touched,
+													password: true,
+												});
+											}
+											formik.handleChange(e);
+										}}
+										value={formik.values.password}
+										placeholder="password"
+										error={
+											!!formik.errors.password && formik.touched.password
+												? formik.errors.password
+												: ''
 										}
-										formik.handleChange(e);
-									}}
-									value={formik.values.password}
-									placeholder="password"
-									error={
-										!!formik.errors.password && formik.touched.password
-											? formik.errors.password
-											: ''
-									}
-								/>
+									/>
+								</div>
+								<div className="flex flex-col justify-between items-center gap-4">
+									<Button
+										label="Signup"
+										onClick={() => formik.submitForm()}
+										loading={loading}
+										disabled={!!formik.errors.email || !!formik.errors.password}
+									/>
+									<Link
+										href="/login"
+										className="font-bold text-neutral-400 text-sm hover:text-blue underline underline-offset-4 cursor-pointer"
+									>
+										login?
+									</Link>
+								</div>
 							</div>
-							<div className="flex flex-col justify-between items-center gap-4">
-								<Button
-									label="Signup"
-									onClick={() => formik.submitForm()}
-									loading={loading}
-									disabled={!!formik.errors.email || !!formik.errors.password}
-								/>
-								<Link
-									href="/login"
-									className="font-bold text-neutral-400 text-sm hover:text-blue underline underline-offset-4 cursor-pointer"
-								>
-									login?
-								</Link>
-							</div>
-						</div>
-					)}
-				</Formik>
+						)}
+					</Formik>
+				</div>
 			</div>
 		</div>
 	);

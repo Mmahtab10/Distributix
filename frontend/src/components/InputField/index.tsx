@@ -12,7 +12,8 @@ interface Props {
 		| 'email'
 		| 'password'
 		| 'number'
-		| 'datetime-local';
+		| 'datetime-local'
+		| 'date';
 	error?: string;
 }
 const InputField: React.FC<Props> = ({
@@ -27,13 +28,18 @@ const InputField: React.FC<Props> = ({
 	const getSharedStyles = () =>
 		`border-[3px] bg-white w-full ${
 			error ? 'border-red' : 'border-black focus:border-blue'
-		} flex justify-start items-center rounded-sm px-2 outline-none text-black font-bold transition-all duration-200 ease-in-out `;
+		} flex justify-start items-center rounded px-2 outline-none text-black font-bold transition-all duration-200 ease-in-out `;
 	return (
 		<div
 			className={`w-full ${
 				type === 'textarea' ? 'min-h-[5rem] max-h-[8rem]' : 'max-h-[5rem]'
 			} flex flex-col justify-start items-start relative`}
 		>
+			<style>
+				{`date::-webkit-calendar-picker-indicator {
+          margin-left: auto
+        }`}
+			</style>
 			{label && (
 				<label className={`text-black font-bold`} htmlFor={name}>
 					{label}
@@ -53,7 +59,9 @@ const InputField: React.FC<Props> = ({
 					id={name}
 					name={name}
 					type={type}
-					className={`min-w-[16rem] h-12 ${getSharedStyles()} -ms-reveal:invert`}
+					className={` h-12 ${getSharedStyles()} -ms-reveal:invert ${
+						!type.includes('date') && 'min-w-[16rem]'
+					}`}
 					placeholder={placeholder}
 					onChange={onChange}
 					value={value || ''}
