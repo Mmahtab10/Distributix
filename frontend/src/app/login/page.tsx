@@ -31,7 +31,7 @@ export default function Page() {
 		<div className="flex justify-center items-center w-full h-full">
 			<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
 				<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
-					<Link href="/" className="">
+					<Link href="/" className="cursor-pointer">
 						<Logo size="lg" type="light" hideBorder={true} />
 					</Link>
 				</div>

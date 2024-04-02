@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import createTicketThunk from '@/store/create-ticket.thunk';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
+import Link from 'next/link';
 
 const CreateTicketPage = () => {
 	const dispatch = useDispatch();
@@ -51,7 +52,9 @@ const CreateTicketPage = () => {
 	return (
 		<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
 			<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
-				<Logo size="lg" type="light" hideBorder={true} />
+				<Link href="/" className="cursor-pointer">
+					<Logo size="lg" type="light" hideBorder={true} />
+				</Link>
 			</div>
 			<div className="flex flex-col justify-start items-center gap-6 bg-white md:p-8 rounded">
 				<Formik

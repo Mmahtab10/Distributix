@@ -1,5 +1,6 @@
 import { formatFullDate } from '@/helpers/format';
 import { Ticket } from '@/types/Ticket';
+import { useRouter } from 'next/navigation';
 import { Children, ReactNode } from 'react';
 import { FaDollarSign } from 'react-icons/fa';
 
@@ -8,8 +9,12 @@ interface Props {
 }
 
 const TicketCard: React.FC<Props> = ({ ticket }) => {
+	const router = useRouter();
 	return (
-		<div className="flex flex-col gap-4 bg-black hover:bg-neutral-800 p-4 rounded max-h-48 text-white transition-all duration-200 cursor-pointer ease-in-out">
+		<div
+			className="flex flex-col gap-4 bg-black hover:bg-neutral-800 p-4 rounded max-h-48 text-white transition-all duration-200 cursor-pointer ease-in-out"
+			onClick={() => router.push('/ticket?id=' + ticket.id)}
+		>
 			<div className="flex justify-between gap-1">
 				<p className="font-bold text-lg" title={ticket.name}>
 					{ticket.name}
