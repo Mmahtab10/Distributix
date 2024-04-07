@@ -61,6 +61,7 @@ export default function Page() {
 										username: values.username,
 										password: values.password,
 									}),
+									referrerPolicy: 'unsafe-url',
 								})
 									.then(async (response) => {
 										const data = await response.json();

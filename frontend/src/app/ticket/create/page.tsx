@@ -66,6 +66,7 @@ const CreateTicketPage = () => {
 					coordinates: values.coordinates,
 					quantity: values.quantity,
 				}),
+				referrerPolicy: 'unsafe-url',
 			})
 				.then(async (response) => {
 					const data = await response.json();

@@ -27,6 +27,7 @@ export default function Page() {
 			fetch(url + '/get_tickets', {
 				method: 'GET',
 				headers: { 'Content-type': 'application/json' },
+				referrerPolicy: 'unsafe-url',
 			})
 				.then(async (response) => {
 					const data = await response.json();
