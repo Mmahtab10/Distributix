@@ -4,7 +4,6 @@ import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
 import { getEnvURL } from '@/helpers/getEnvURL';
-import isValidToken from '@/helpers/isValidToken';
 import { SessionState, setLoggedIn } from '@/store/session.slice';
 import signupThunk from '@/store/signup.thunk';
 import { Formik } from 'formik';
