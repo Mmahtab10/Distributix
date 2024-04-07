@@ -3,29 +3,32 @@
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
+import { getEnvURL } from '@/helpers/getEnvURL';
 import isValidToken from '@/helpers/isValidToken';
-import { SessionState } from '@/store/session.slice';
+import { SessionState, setLoggedIn } from '@/store/session.slice';
 import signupThunk from '@/store/signup.thunk';
 import { Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
 export default function Page() {
 	const dispatch = useDispatch();
-	const { loading, error, parsedToken } = useSelector(
+	const { loggedIn } = useSelector(
 		({ session }: { session: SessionState }) => session
 	);
 	const searchParams = useSearchParams();
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
 
 	useEffect(() => {
-		if (isValidToken(parsedToken)) {
-			router.push('/app');
+		if (loggedIn) {
+			router.push('/');
 		}
-	}, [parsedToken, router, searchParams]);
+	}, [loggedIn, router]);
 
 	return (
 		<div className="flex justify-center items-center w-full h-full">
@@ -38,17 +41,51 @@ export default function Page() {
 				<div className="flex flex-col justify-start items-center gap-6 bg-white md:p-8 rounded">
 					<Formik
 						initialValues={{
-							email: '',
+							username: '',
 							password: '',
 						}}
 						validationSchema={Yup.object().shape({
-							email: Yup.string().email('invalid email').required('required'),
+							username: Yup.string().required('required'),
 							password: Yup.string()
 								.min(6, 'password is too short')
 								.required('required'),
 						})}
 						onSubmit={(values) => {
-							dispatch(signupThunk(values.email, values.password) as any);
+							let url = getEnvURL(2);
+							const makeRequest = (url: string, retriesLeft: number) => {
+								if (retriesLeft <= 0) {
+									return;
+								}
+								fetch(url + '/register', {
+									method: 'POST',
+									headers: { 'Content-type': 'application/json' },
+									body: JSON.stringify({
+										username: values.username,
+										password: values.password,
+									}),
+								})
+									.then(async (response) => {
+										const data = await response.json();
+										if (response.status === 200) {
+											dispatch(setLoggedIn({ loggedIn: true }));
+											setLoading(false);
+											router.push('/');
+										} else if (response.status === 403) {
+											makeRequest(
+												getEnvURL(data.leader.split(':')[2].charAt(3)),
+												retriesLeft - 1
+											);
+										} else {
+											setError(data.message);
+											setLoading(false);
+										}
+									})
+									.catch((error) => {
+										setError(error.message);
+									});
+							};
+							makeRequest(url, 5);
+							setLoading(true);
 						}}
 					>
 						{(formik) => (
@@ -56,20 +93,23 @@ export default function Page() {
 								<div className="z-10 flex flex-col justify-between items-center gap-4 w-full">
 									{error && <p className="font-bold text-red">{error}</p>}
 									<InputField
-										name="email"
-										label="Email"
-										type="email"
+										name="username"
+										label="Username"
+										type="text"
 										onChange={(e) => {
-											if (!formik.touched.email) {
-												formik.setTouched({ ...formik.touched, email: true });
+											if (!formik.touched.username) {
+												formik.setTouched({
+													...formik.touched,
+													username: true,
+												});
 											}
 											formik.handleChange(e);
 										}}
-										value={formik.values.email}
-										placeholder="email@example.com"
+										value={formik.values.username}
+										placeholder="username"
 										error={
-											!!formik.errors.email && formik.touched.email
-												? formik.errors.email
+											!!formik.errors.username && formik.touched.username
+												? formik.errors.username
 												: ''
 										}
 									/>
@@ -100,7 +140,9 @@ export default function Page() {
 										label="Signup"
 										onClick={() => formik.submitForm()}
 										loading={loading}
-										disabled={!!formik.errors.email || !!formik.errors.password}
+										disabled={
+											!!formik.errors.username || !!formik.errors.password
+										}
 									/>
 									<Link
 										href="/login"

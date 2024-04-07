@@ -3,17 +3,13 @@ import { jwtDecode } from 'jwt-decode';
 import { useSelector } from 'react-redux';
 
 export interface SessionState {
-	token?: string;
-	parsedToken?: any;
-	userId?: string;
-	error?: string;
+	loggedIn?: boolean;
+	error?: any;
 	loading?: boolean;
 }
 
 const initialState: SessionState = {
-	token: undefined,
-	parsedToken: undefined,
-	userId: undefined,
+	loggedIn: false,
 	error: undefined,
 	loading: false,
 };
@@ -22,17 +18,14 @@ const sessionSlice = createSlice({
 	name: 'user',
 	initialState,
 	reducers: {
-		setToken: (state, action) => {
+		setLoggedIn: (state, action) => {
 			if (!action.payload) {
 				return initialState;
 			}
-			const token = action.payload.jwt;
-			const userId = action.payload.userId;
+			const loggedIn = action.payload.loggedIn;
 			return {
 				...state,
-				token,
-				userId,
-				parsedToken: jwtDecode(token),
+				loggedIn,
 				loading: false,
 			};
 		},
@@ -46,6 +39,6 @@ const sessionSlice = createSlice({
 	},
 });
 
-export const { setToken, setError, setLoading } = sessionSlice.actions;
+export const { setLoggedIn, setError, setLoading } = sessionSlice.actions;
 
 export default sessionSlice.reducer;

@@ -1,19 +1,29 @@
 'use client';
 
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import { Formik, Field, Form } from 'formik';
-import * as Yup from 'yup';
-import InputField from '@/components/InputField';
 import Button from '@/components/Button';
-import createTicketThunk from '@/store/create-ticket.thunk';
-import { useRouter } from 'next/navigation';
+import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
+import { getEnvURL } from '@/helpers/getEnvURL';
+import { SessionState, setError, setLoading } from '@/store/session.slice';
+import { Formik } from 'formik';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import * as Yup from 'yup';
 
 const CreateTicketPage = () => {
 	const dispatch = useDispatch();
+	const { loggedIn } = useSelector(
+		({ session }: { session: SessionState }) => session
+	);
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+	useEffect(() => {
+		if (!loggedIn) {
+			router.push('/login');
+		}
+	}, [loggedIn, router]);
 
 	const initialValues = {
 		name: '',
@@ -39,14 +49,45 @@ const CreateTicketPage = () => {
 	});
 
 	const handleFormSubmit = (values: any, actions: any): void => {
-		dispatch<any>(createTicketThunk(values))
-			.then((ticketId: any) => {
-				router.push(`/tickets/${ticketId}`);
+		let url = getEnvURL(2);
+		const makeRequest = (url: string, retriesLeft: number) => {
+			if (retriesLeft <= 0) {
+				return;
+			}
+			fetch(url + '/create_ticket', {
+				method: 'POST',
+				headers: { 'Content-type': 'application/json' },
+				body: JSON.stringify({
+					eventName: values.name,
+					description: values.description,
+					price: values.price,
+					date: values.date,
+					location: values.locationName,
+					coordinates: values.coordinates,
+					quantity: values.quantity,
+				}),
 			})
-			.catch((error: any) => {
-				actions.setSubmitting(false);
-				console.error('Error creating ticket:', error);
-			});
+				.then(async (response) => {
+					const data = await response.json();
+					if (response.status === 200) {
+						setLoading(false);
+						router.push('/');
+					} else if (response.status === 403) {
+						makeRequest(
+							getEnvURL(data.leader.split(':')[2].charAt(3)),
+							retriesLeft - 1
+						);
+					} else {
+						setError(data.message);
+						setLoading(false);
+					}
+				})
+				.catch((error) => {
+					setError(error.message);
+				});
+		};
+		makeRequest(url, 5);
+		setLoading(true);
 	};
 
 	return (
@@ -205,13 +246,14 @@ const CreateTicketPage = () => {
 									<Button
 										type="submit"
 										label="Create Ticket"
-										loading={formik.isSubmitting}
-										disabled={formik.isSubmitting || !formik.isValid}
+										onClick={() => formik.submitForm()}
+										loading={loading || formik.isSubmitting}
+										disabled={loading || formik.isSubmitting || !formik.isValid}
 									/>
 									<Button
 										style="danger"
 										label="Cancel"
-										disabled={formik.isSubmitting || !formik.isValid}
+										disabled={loading || formik.isSubmitting || !formik.isValid}
 										onClick={() => router.push('/')}
 									/>
 								</div>

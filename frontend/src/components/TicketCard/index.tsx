@@ -13,11 +13,11 @@ const TicketCard: React.FC<Props> = ({ ticket }) => {
 	return (
 		<div
 			className="flex flex-col gap-4 bg-black hover:bg-neutral-800 p-4 rounded max-h-48 text-white transition-all duration-200 cursor-pointer ease-in-out"
-			onClick={() => router.push('/ticket?id=' + ticket.id)}
+			onClick={() => router.push('/ticket?id=' + ticket.ticket_id)}
 		>
 			<div className="flex justify-between gap-1">
-				<p className="font-bold text-lg" title={ticket.name}>
-					{ticket.name}
+				<p className="font-bold text-lg" title={ticket.eventName}>
+					{ticket.eventName}
 				</p>
 				<div className="flex flex-col gap-1 min-w-fit">
 					<MetaInfoPill>{formatFullDate(new Date(ticket.date))}</MetaInfoPill>

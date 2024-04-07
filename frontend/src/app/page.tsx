@@ -4,7 +4,7 @@ import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
 import TicketCard from '@/components/TicketCard';
-import { getTickets } from '@/helpers/tickets';
+import { getEnvURL } from '@/helpers/getEnvURL';
 import { Ticket } from '@/types/Ticket';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -16,18 +16,45 @@ export default function Page() {
 	const [endDate, setEndDate] = useState('');
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		setTickets(getTickets());
+		let url = getEnvURL(2);
+		const makeRequest = (url: string, retriesLeft: number) => {
+			if (retriesLeft <= 0) {
+				return;
+			}
+			fetch(url + '/get_tickets', {
+				method: 'GET',
+				headers: { 'Content-type': 'application/json' },
+			})
+				.then(async (response) => {
+					const data = await response.json();
+					if (response.status === 200) {
+						setLoading(false);
+						setTickets(data.tickets);
+					} else if (response.status === 403) {
+						makeRequest(
+							getEnvURL(data.leader.split(':')[2].charAt(3)),
+							retriesLeft - 1
+						);
+					} else {
+						setLoading(false);
+					}
+				})
+				.catch((error) => {});
+		};
+		makeRequest(url, 5);
+		setLoading(true);
 	}, []);
 
-	useEffect(() => {
-		let t = getTickets();
+	const format = (tickets: Ticket[]) => {
+		let t = tickets;
 
 		if (searchTerm !== '') {
 			t = t.filter(
 				(ticket) =>
-					ticket.name.toLowerCase().includes(searchTerm) ||
+					ticket.eventName.toLowerCase().includes(searchTerm) ||
 					ticket.description.toLowerCase().includes(searchTerm)
 			);
 		}
@@ -39,8 +66,8 @@ export default function Page() {
 		if (endDate !== '') {
 			t = t.filter((ticket) => new Date(endDate) >= new Date(ticket.date));
 		}
-		setTickets(t);
-	}, [startDate, endDate, searchTerm]);
+		return t;
+	};
 
 	return (
 		<div className="flex flex-col justify-start items-start gap-8 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
@@ -90,8 +117,8 @@ export default function Page() {
 					</div>
 				</div>
 				<div className="gap-4 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 grid-flow-row w-full h-full overflow-y-scroll">
-					{tickets.map((ticket) => (
-						<TicketCard key={ticket.id} ticket={ticket} />
+					{format(tickets).map((ticket) => (
+						<TicketCard key={ticket.ticket_id} ticket={ticket} />
 					))}
 				</div>
 			</div>
