@@ -7,7 +7,7 @@ import {
 	setUrl,
 } from './session.slice';
 
-const getURLThunk = (lId = 2, firstCall = true) => {
+const getURLThunk = (lId = 1, firstCall = true) => {
 	return (dispatch: Dispatch, getState: any) => {
 		const { url, loading } = getState().session as SessionState;
 

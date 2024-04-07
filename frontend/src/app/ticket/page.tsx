@@ -1,6 +1,7 @@
 'use client';
 
 import Button from '@/components/Button';
+import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
 import Notifications from '@/components/Notifications';
 import { formatFullDate } from '@/helpers/format';
@@ -8,14 +9,18 @@ import getURLThunk from '@/store/getUrl.thunk';
 import { SessionState, addNotification } from '@/store/session.slice';
 import { Ticket } from '@/types/Ticket';
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { CgSpinner } from 'react-icons/cg';
 import { FaArrowLeft, FaDollarSign } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
+import * as Yup from 'yup';
 
 export default function Page() {
 	const [ticket, setTicket] = useState<Ticket>();
+	const [quantity, setQuantity] = useState<number>(0);
 	const params = useSearchParams();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
@@ -23,9 +28,9 @@ export default function Page() {
 		({ session }: { session: SessionState }) => session
 	);
 	const dispatch = useDispatch();
-
+	const [refresh, setRefresh] = useState(false);
 	useEffect(() => {
-		if (url) {
+		if (url || (refresh && url)) {
 			setLoading(true);
 			fetch(url + '/get_ticket/' + params.get('id'), {
 				method: 'GET',
@@ -62,54 +67,8 @@ export default function Page() {
 		} else {
 			dispatch(getURLThunk() as any);
 		}
-	}, [url, dispatch, params]);
-
-	const placeOrder = () => {
-		setLoading(true);
-		fetch(url + '/place_order', {
-			method: 'GET',
-			headers: { 'Content-type': 'application/json' },
-			referrerPolicy: 'unsafe-url',
-			body: JSON.stringify({
-				ticketId: params.get('id'),
-			}),
-		})
-			.then(async (response) => {
-				const data = await response.json();
-				if (response.status === 200) {
-					setLoading(false);
-					setTicket({
-						...data.ticket,
-						coordinates: data.ticket.coordinates.split(','),
-					});
-				} else if (response.status === 403) {
-					dispatch(getURLThunk() as any);
-					dispatch(
-						addNotification({
-							label: 'Server error',
-							message: 'please try again!',
-						})
-					);
-					setLoading(false);
-				} else {
-					addNotification({
-						label: 'Not enough quantity',
-						message: 'please lower quantity and try again!',
-					});
-					setLoading(false);
-				}
-			})
-			.catch((error) => {
-				dispatch(getURLThunk() as any);
-				dispatch(
-					addNotification({
-						label: 'Server error',
-						message: 'please try again!',
-					})
-				);
-				setLoading(false);
-			});
-	};
+		setRefresh(false);
+	}, [url, dispatch, params, refresh]);
 
 	return (
 		<div className="absolute flex flex-col justify-start items-start gap-8 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
@@ -125,7 +84,14 @@ export default function Page() {
 					icon={<FaArrowLeft />}
 				/>
 			</div>
-			{ticket && (
+			{(loading || URLLoading) && (
+				<div className="relative z-[999] flex flex-col justify-center items-center w-full h-full">
+					<div className="top-1/2 left-1/2 z-[999] absolute -translate-x-1/2 -translate-y-1/2">
+						<CgSpinner className={`animate-spin text-blue w-32 h-32 z-[999]`} />
+					</div>
+				</div>
+			)}
+			{ticket && !loading && !URLLoading && (
 				<div className="flex flex-col gap-8 bg-white pb-0 rounded w-full h-full overflow-hidden">
 					<div className="flex flex-col gap-8 w-1/3">
 						<div className="flex flex-col gap-4">
@@ -151,9 +117,97 @@ export default function Page() {
 								left
 							</div>
 						</div>
-						<div>
-							<Button label="Order now" />
-						</div>
+						<Formik
+							initialValues={{
+								quantity: '0.0',
+							}}
+							validationSchema={Yup.object().shape({
+								quantity: Yup.string()
+									.min(1, 'You need to order atleast 1')
+									.max(
+										ticket.quantity,
+										'You can only order upto ' + ticket.quantity + ' tickets.'
+									)
+									.required('required'),
+							})}
+							onSubmit={(values, formik) => {
+								fetch(url + '/place_order', {
+									method: 'POST',
+									headers: { 'Content-type': 'application/json' },
+									referrerPolicy: 'unsafe-url',
+									body: JSON.stringify({
+										ticket_id: params.get('id'),
+										quantity: values.quantity,
+									}),
+								})
+									.then(async (response) => {
+										const data = await response.json();
+										if (response.status === 200) {
+											setLoading(false);
+											setRefresh(true);
+										} else if (response.status === 403) {
+											dispatch(getURLThunk() as any);
+											dispatch(
+												addNotification({
+													label: 'Server error',
+													message: 'please try again!',
+												})
+											);
+											setLoading(false);
+										} else if (response.status === 422) {
+											dispatch(
+												addNotification({
+													label: 'Not enough quantity',
+													message: 'please lower quantity and try again!',
+												})
+											);
+											setLoading(false);
+										}
+									})
+									.catch((error) => {
+										dispatch(getURLThunk() as any);
+										dispatch(
+											addNotification({
+												label: 'Server error',
+												message: 'please try again!',
+											})
+										);
+										setLoading(false);
+									});
+							}}
+						>
+							{(formik) => (
+								<div className="flex flex-col justify-center items-center gap-8 w-fit">
+									<InputField
+										name="quantity"
+										label="Quantity"
+										type="number"
+										onChange={(e) => {
+											if (!formik.touched.quantity) {
+												formik.setTouched({
+													...formik.touched,
+													quantity: true,
+												});
+											}
+											formik.handleChange(e);
+										}}
+										value={formik.values.quantity}
+										placeholder="0"
+										error={
+											!!formik.errors.quantity && formik.touched.quantity
+												? formik.errors.quantity
+												: ''
+										}
+									/>
+									<Button
+										label="Order now"
+										onClick={() => formik.submitForm()}
+										loading={loading || URLLoading}
+										disabled={!!formik.errors.quantity}
+									/>
+								</div>
+							)}
+						</Formik>
 					</div>
 					<div className="flex flex-col gap-4 w-full h-full">
 						<p className="font-bold text-lg">Venue is at {ticket.location}</p>
