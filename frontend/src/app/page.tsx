@@ -3,12 +3,16 @@
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
+import Notifications from '@/components/Notifications';
 import TicketCard from '@/components/TicketCard';
-import { getEnvURL } from '@/helpers/getEnvURL';
+import getURLThunk from '@/store/getUrl.thunk';
+import { SessionState, addNotification } from '@/store/session.slice';
 import { Ticket } from '@/types/Ticket';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { CgSpinner } from 'react-icons/cg';
 import { FaPlus } from 'react-icons/fa';
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function Page() {
 	const [searchTerm, setSearchTerm] = useState('');
@@ -17,13 +21,14 @@ export default function Page() {
 	const [tickets, setTickets] = useState<Ticket[]>([]);
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const { url, loading: URLLoading } = useSelector(
+		({ session }: { session: SessionState }) => session
+	);
+	const dispatch = useDispatch();
 
 	useEffect(() => {
-		let url = getEnvURL(2);
-		const makeRequest = (url: string, retriesLeft: number) => {
-			if (retriesLeft <= 0) {
-				return;
-			}
+		if (url) {
+			setLoading(true);
 			fetch(url + '/get_tickets', {
 				method: 'GET',
 				headers: { 'Content-type': 'application/json' },
@@ -35,19 +40,28 @@ export default function Page() {
 						setLoading(false);
 						setTickets(data.tickets);
 					} else if (response.status === 403) {
-						makeRequest(
-							getEnvURL(data.leader.split(':')[2].charAt(3)),
-							retriesLeft - 1
+						dispatch(getURLThunk() as any);
+						dispatch(
+							addNotification({
+								label: 'Server error',
+								message: 'please try again!',
+							})
 						);
-					} else {
-						setLoading(false);
 					}
 				})
-				.catch((error) => {});
-		};
-		makeRequest(url, 5);
-		setLoading(true);
-	}, []);
+				.catch((error) => {
+					dispatch(getURLThunk() as any);
+					dispatch(
+						addNotification({
+							label: 'Server error',
+							message: 'please try again!',
+						})
+					);
+				});
+		} else {
+			dispatch(getURLThunk() as any);
+		}
+	}, [url, dispatch]);
 
 	const format = (tickets: Ticket[]) => {
 		let t = tickets;
@@ -71,7 +85,8 @@ export default function Page() {
 	};
 
 	return (
-		<div className="flex flex-col justify-start items-start gap-8 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+		<div className="absolute flex flex-col justify-start items-start gap-8 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+			<Notifications />
 			<div className="flex justify-between items-center gap-16 bg-white rounded w-full">
 				<Logo size="lg" type="light" hideBorder={true} />
 				<Button
@@ -117,11 +132,22 @@ export default function Page() {
 						</div>
 					</div>
 				</div>
-				<div className="gap-4 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 grid-flow-row w-full h-full overflow-y-scroll">
-					{format(tickets).map((ticket) => (
-						<TicketCard key={ticket.ticket_id} ticket={ticket} />
-					))}
-				</div>
+				{!loading && !URLLoading && (
+					<div className="gap-4 grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 grid-flow-row w-full max-h-full overflow-y-scroll">
+						{format(tickets).map((ticket) => (
+							<TicketCard key={ticket.ticket_id} ticket={ticket} />
+						))}
+					</div>
+				)}
+				{(loading || URLLoading) && (
+					<div className="relative z-[999] flex flex-col justify-center items-center w-full h-full">
+						<div className="top-1/2 left-1/2 z-[999] absolute -translate-x-1/2 -translate-y-1/2">
+							<CgSpinner
+								className={`animate-spin text-blue w-32 h-32 z-[999]`}
+							/>
+						</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);

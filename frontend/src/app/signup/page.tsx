@@ -3,23 +3,29 @@
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
-import { getEnvURL } from '@/helpers/getEnvURL';
-import { SessionState, setLoggedIn } from '@/store/session.slice';
+import Notifications from '@/components/Notifications';
+import getURLThunk from '@/store/getUrl.thunk';
+import {
+	SessionState,
+	addNotification,
+	setLoggedIn,
+} from '@/store/session.slice';
 import { Formik } from 'formik';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
 export default function Page() {
-	const dispatch = useDispatch();
-	const { loggedIn } = useSelector(
-		({ session }: { session: SessionState }) => session
-	);
-	const searchParams = useSearchParams();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const {
+		url,
+		loading: URLLoading,
+		loggedIn,
+	} = useSelector(({ session }: { session: SessionState }) => session);
+	const dispatch = useDispatch();
 	const [error, setError] = useState('');
 
 	useEffect(() => {
@@ -29,7 +35,9 @@ export default function Page() {
 	}, [loggedIn, router]);
 
 	return (
-		<div className="flex justify-center items-center w-full h-full">
+		<div className="absolute flex justify-center items-center w-full h-full">
+			<Notifications />
+
 			<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
 				<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
 					<Link href="/" className="cursor-pointer">
@@ -49,42 +57,47 @@ export default function Page() {
 								.required('required'),
 						})}
 						onSubmit={(values) => {
-							let url = getEnvURL(2);
-							const makeRequest = (url: string, retriesLeft: number) => {
-								if (retriesLeft <= 0) {
-									return;
-								}
-								fetch(url + '/register', {
-									method: 'POST',
-									headers: { 'Content-type': 'application/json' },
-									body: JSON.stringify({
-										username: values.username,
-										password: values.password,
-									}),
-									referrerPolicy: 'unsafe-url',
-								})
-									.then(async (response) => {
-										const data = await response.json();
-										if (response.status === 200) {
-											dispatch(setLoggedIn({ loggedIn: true }));
-											setLoading(false);
-											router.push('/');
-										} else if (response.status === 403) {
-											makeRequest(
-												getEnvURL(data.leader.split(':')[2].charAt(3)),
-												retriesLeft - 1
-											);
-										} else {
-											setError(data.message);
-											setLoading(false);
-										}
-									})
-									.catch((error) => {
-										setError(error.message);
-									});
-							};
-							makeRequest(url, 5);
 							setLoading(true);
+							fetch(url + '/register', {
+								method: 'POST',
+								headers: { 'Content-type': 'application/json' },
+								body: JSON.stringify({
+									username: values.username,
+									password: values.password,
+								}),
+								referrerPolicy: 'unsafe-url',
+							})
+								.then(async (response) => {
+									const data = await response.json();
+									if (response.status === 200) {
+										dispatch(setLoggedIn({ loggedIn: true }));
+										setLoading(false);
+										router.push('/');
+									} else if (response.status === 403) {
+										dispatch(getURLThunk() as any);
+										dispatch(
+											addNotification({
+												label: 'Server error',
+												message: 'please try again!',
+											})
+										);
+										setLoading(false);
+									} else {
+										setError(data.message);
+										setLoading(false);
+									}
+								})
+								.catch((error) => {
+									dispatch(getURLThunk() as any);
+									dispatch(
+										addNotification({
+											label: 'Server error',
+											message: 'please try again!',
+										})
+									);
+									setError(error.message);
+									setLoading(false);
+								});
 						}}
 					>
 						{(formik) => (

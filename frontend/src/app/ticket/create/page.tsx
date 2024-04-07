@@ -3,8 +3,9 @@
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Logo from '@/components/Logo';
-import { getEnvURL } from '@/helpers/getEnvURL';
-import { SessionState, setError, setLoading } from '@/store/session.slice';
+import Notifications from '@/components/Notifications';
+import getURLThunk from '@/store/getUrl.thunk';
+import { SessionState, addNotification, setError } from '@/store/session.slice';
 import { Formik } from 'formik';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,12 +14,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as Yup from 'yup';
 
 const CreateTicketPage = () => {
-	const dispatch = useDispatch();
-	const { loggedIn } = useSelector(
-		({ session }: { session: SessionState }) => session
-	);
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
+	const {
+		url,
+		loading: URLLoading,
+		loggedIn,
+	} = useSelector(({ session }: { session: SessionState }) => session);
+	const dispatch = useDispatch();
+
 	useEffect(() => {
 		if (!loggedIn) {
 			router.push('/login');
@@ -49,50 +53,56 @@ const CreateTicketPage = () => {
 	});
 
 	const handleFormSubmit = (values: any, actions: any): void => {
-		let url = getEnvURL(2);
-		const makeRequest = (url: string, retriesLeft: number) => {
-			if (retriesLeft <= 0) {
-				return;
-			}
-			fetch(url + '/create_ticket', {
-				method: 'POST',
-				headers: { 'Content-type': 'application/json' },
-				body: JSON.stringify({
-					eventName: values.name,
-					description: values.description,
-					price: values.price,
-					date: values.date,
-					location: values.locationName,
-					coordinates: values.coordinates,
-					quantity: values.quantity,
-				}),
-				referrerPolicy: 'unsafe-url',
-			})
-				.then(async (response) => {
-					const data = await response.json();
-					if (response.status === 200) {
-						setLoading(false);
-						router.push('/');
-					} else if (response.status === 403) {
-						makeRequest(
-							getEnvURL(data.leader.split(':')[2].charAt(3)),
-							retriesLeft - 1
-						);
-					} else {
-						setError(data.message);
-						setLoading(false);
-					}
-				})
-				.catch((error) => {
-					setError(error.message);
-				});
-		};
-		makeRequest(url, 5);
 		setLoading(true);
+
+		fetch(url + '/create_ticket', {
+			method: 'POST',
+			headers: { 'Content-type': 'application/json' },
+			body: JSON.stringify({
+				eventName: values.name,
+				description: values.description,
+				price: values.price,
+				date: values.date,
+				location: values.locationName,
+				coordinates: values.coordinates,
+				quantity: values.quantity,
+			}),
+			referrerPolicy: 'unsafe-url',
+		})
+			.then(async (response) => {
+				const data = await response.json();
+				if (response.status === 200) {
+					setLoading(false);
+					router.push('/');
+				} else if (response.status === 403) {
+					dispatch(getURLThunk() as any);
+					dispatch(
+						addNotification({
+							label: 'Server error',
+							message: 'please try again!',
+						})
+					);
+					setLoading(false);
+				} else {
+					setError(data.message);
+					setLoading(false);
+				}
+			})
+			.catch((error) => {
+				dispatch(getURLThunk() as any);
+				dispatch(
+					addNotification({
+						label: 'Server error',
+						message: 'please try again!',
+					})
+				);
+				setLoading(false);
+			});
 	};
 
 	return (
-		<div className="flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+		<div className="absolute flex flex-col justify-start items-center gap-16 p-6 md:p-10 lg:p-14 pb-0 w-full h-full">
+			<Notifications />
 			<div className="flex justify-between items-center gap-16 bg-white rounded w-full self-start">
 				<Link href="/" className="cursor-pointer">
 					<Logo size="lg" type="light" hideBorder={true} />
