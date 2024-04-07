@@ -4,7 +4,6 @@ import Button from '@/components/Button';
 import Logo from '@/components/Logo';
 import { formatFullDate } from '@/helpers/format';
 import { getEnvURL } from '@/helpers/getEnvURL';
-import { getTickets } from '@/helpers/tickets';
 import { Ticket } from '@/types/Ticket';
 import { APIProvider, Marker, Map } from '@vis.gl/react-google-maps';
 import Link from 'next/link';
