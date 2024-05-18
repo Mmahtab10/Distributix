@@ -84,4 +84,4 @@ DistribuTix demonstrates the potential of distributed systems in revolutionizing
 
 ---
 
-For more detailed information, please refer to the [Final Report](documentation/documentation.pdf).
+For more detailed information, please refer to the [Final Report](documentation/Distributix-Documentation.pdf).
